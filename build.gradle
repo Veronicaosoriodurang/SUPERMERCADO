@@ -1,35 +1,48 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.5'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.5'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.co.programacion'
 version = '0.0.1-SNAPSHOT'
-description = 'Primer ejemplo  de springboot'
+description = 'Primer ejemplo de springboot'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-//    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.5.5")
-    implementation("mysql:mysql-connector-java:8.0.33")
+    // Spring Boot Web para construir la aplicación web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Thymeleaf para las vistas HTML
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    // MySQL Connector para conectarse a la base de datos
+    implementation "mysql:mysql-connector-java:8.0.33"
+
+    // Lombok para evitar escribir getters y setters a mano
     compileOnly 'org.projectlombok:lombok'
-    implementation("org.projectlombok:lombok-mapstruct-binding:0.2.0")
     annotationProcessor 'org.projectlombok:lombok'
+
+    // DevTools para reinicio automático y mejoras en desarrollo
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // MapStruct binding con Lombok
+    implementation "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }

@@ -14,11 +14,10 @@ public class PersonaRepositoryHelper {
     }
 
     public String getPersonaByApellidos(String apellidos) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Select idPersona, nombres, apellidos, cedula, direccion from persona where apellidos like '%");
-        stringBuilder.append(apellidos);
-        stringBuilder.append("%'");
-        return stringBuilder.toString();
+        String stringBuilder = "Select idPersona, nombres, apellidos, cedula, direccion from persona where apellidos like '%" +
+                apellidos +
+                "%'";
+        return stringBuilder;
     }
 
     public String actualizarPersona() {

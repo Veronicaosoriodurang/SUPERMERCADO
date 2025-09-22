@@ -40,7 +40,7 @@ public class Main {
 
     }
 
-    Vehiculo lista [] = new Vehiculo[4];
+    Vehiculo[] lista = new Vehiculo[4];
     lista[0] = new Carro();
     lista[1] = new Moto();
     lista[2] = new Moto();
@@ -53,7 +53,7 @@ public class Main {
       System.out.println("numero de ruedas: "+v.getNumeroRuedas());
     }
 
-    AnimalAbstracto animales [] = new AnimalAbstracto[3];
+    AnimalAbstracto[] animales = new AnimalAbstracto[3];
     animales[0] = new Perro();
     animales[1] = new Gato();
     animales[2] = new Gallina();

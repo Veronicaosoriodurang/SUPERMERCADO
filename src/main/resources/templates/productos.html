@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos del Supermercado</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">🛒 Productos del Supermercado</h1>
+        <div>
+            <a th:href="@{/}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-house"></i> Inicio
+            </a>
+            <a th:href="@{/agregar}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Agregar Producto
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes de notificación -->
+    <div th:if="${mensaje}" class="alert alert-dismissible fade show"
+         th:classappend="${tipoMensaje == 'success'} ? 'alert-success' :
+                        (${tipoMensaje == 'warning'} ? 'alert-warning' : 'alert-danger')">
+        <span th:text="${mensaje}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form th:action="@{/productos}" method="get">
+                <div class="input-group">
+                    <input type="text"
+                           class="form-control"
+                           name="buscar"
+                           th:value="${buscar}"
+                           placeholder="Buscar productos por nombre...">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a th:href="@{/productos}" class="btn btn-outline-danger" th:if="${buscar}">
+                        <i class="bi bi-x"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <span class="badge bg-info fs-6" th:text="'Total productos: ' + ${productos.size()}"></span>
+        </div>
+    </div>
+
+    <!-- Mensaje cuando no hay productos -->
+    <div th:if="${productos.isEmpty()}" class="alert alert-info text-center">
+        <i class="bi bi-info-circle"></i>
+        <span th:if="${buscar}">No se encontraron productos con el término "<strong th:text="${buscar}"></strong>"</span>
+        <span th:unless="${buscar}">No hay productos disponibles.</span>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="table-responsive" th:if="${!productos.isEmpty()}">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+            <tr>
+                <th scope="col" style="width: 8%;">ID</th>
+                <th scope="col" style="width: 25%;">Nombre</th>
+                <th scope="col" style="width: 15%;">Precio</th>
+                <th scope="col" style="width: 12%;">Cantidad</th>
+                <th scope="col" style="width: 15%;">Total</th>
+                <th scope="col" style="width: 25%;">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="producto : ${productos}" th:id="'producto-' + ${producto.id}">
+                <td>
+                    <span class="badge bg-secondary" th:text="${producto.id}"></span>
+                </td>
+                <td>
+                    <strong th:text="${producto.nombre}"></strong>
+                </td>
+                <td>
+                    <span class="text-success fw-bold"
+                          th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}"></span>
+                </td>
+                <td>
+                    <span class="badge bg-primary" th:text="${producto.cantidad}"></span>
+                </td>
+                <td>
+                    <span class="text-success fw-bold"
+                          th:text="'$' + ${#numbers.formatDecimal(producto.precio * producto.cantidad, 0, 'COMMA', 0, 'POINT')}"></span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <!-- Botón Editar -->
+                        <a th:href="@{/editar/{id}(id=${producto.id})}"
+                           class="btn btn-outline-warning"
+                           title="Editar producto">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+
+                        <!-- Botón Eliminar -->
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                data-bs-toggle="modal"
+                                th:data-bs-target="'#modalEliminar' + ${producto.id}"
+                                title="Eliminar producto">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal de confirmación para eliminar -->
+                    <div class="modal fade" th:id="'modalEliminar' + ${producto.id}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                                        Confirmar Eliminación
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    ¿Estás seguro de que deseas eliminar el producto
+                                    <strong th:text="${producto.nombre}"></strong>?
+                                    <br><small class="text-muted">Esta acción no se puede deshacer.</small>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="bi bi-x"></i> Cancelar
+                                    </button>
+                                    <form th:action="@{/eliminar/{id}(id=${producto.id})}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Resumen total -->
+    <div class="row mt-4" th:if="${!productos.isEmpty()}">
+        <div class="col-md-6 offset-md-6">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-calculator"></i> Resumen Total
+                    </h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Productos:</strong></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="badge bg-info" th:text="${productos.size()}"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Valor Total:</strong></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h4 class="text-success mb-0"
+                                th:text="'$' + ${#numbers.formatDecimal(#aggregates.sum(productos.![precio * cantidad]), 0, 'COMMA', 0, 'POINT')}"></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="text-center mt-4">
+        <a th:href="@{/agregar}" class="btn btn-primary btn-lg me-2">
+            <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+        </a>
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house"></i> Ir al Inicio
+        </a>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script para animaciones de eliminación -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-cerrar alertas después de 5 segundos
+        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+</script>
+</body>
+</html>

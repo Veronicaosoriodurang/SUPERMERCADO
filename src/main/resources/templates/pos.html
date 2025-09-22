@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Punto de Venta - POS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .pos-container { min-height: 100vh; }
+        .product-card:hover { transform: translateY(-2px); transition: all 0.3s; }
+        .cart-item { border-left: 4px solid #0d6efd; }
+        .total-section { background: linear-gradient(135deg, #28a745, #20c997); }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container-fluid pos-container">
+    <div class="row">
+        <!-- Panel de productos -->
+        <div class="col-md-7 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-shop"></i> Punto de Venta</h2>
+                <div>
+                    <a th:href="@{/}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-house"></i> Inicio
+                    </a>
+                    <a th:href="@{/ventas/lista}" class="btn btn-info">
+                        <i class="bi bi-list"></i> Ver Ventas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mensajes -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Productos disponibles -->
+            <h4 class="mb-3">Productos Disponibles</h4>
+            <div class="row">
+                <div class="col-md-6 col-lg-4 mb-3" th:each="producto : ${productos}">
+                    <div class="card product-card h-100" th:classappend="${producto.cantidad <= 0} ? 'border-danger' : ''">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title" th:text="${producto.nombre}"></h6>
+                                <span class="badge"
+                                      th:classappend="${producto.cantidad > 5} ? 'bg-success' :
+                                                     (${producto.cantidad > 0} ? 'bg-warning' : 'bg-danger')"
+                                      th:text="'Stock: ' + ${producto.cantidad}"></span>
+                            </div>
+                            <p class="card-text text-success fw-bold fs-5"
+                               th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}"></p>
+
+                            <form th:action="@{/ventas/agregar-al-carrito}" method="post" th:if="${producto.cantidad > 0}">
+                                <input type="hidden" name="productoId" th:value="${producto.id}">
+                                <div class="input-group">
+                                    <input type="number"
+                                           class="form-control form-control-sm"
+                                           name="cantidad"
+                                           value="1"
+                                           min="1"
+                                           th:max="${producto.cantidad}"
+                                           required>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div th:if="${producto.cantidad <= 0}" class="text-danger">
+                                <small><i class="bi bi-x-circle"></i> Sin stock</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel del carrito -->
+        <div class="col-md-5 bg-white border-start">
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-cart3"></i> Carrito de Compras</h4>
+                    <form th:action="@{/ventas/cancelar-venta}" method="post" th:if="${!productosCarrito.isEmpty()}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Limpiar
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Productos en el carrito -->
+                <div th:if="${productosCarrito.isEmpty()}" class="text-center text-muted py-5">
+                    <i class="bi bi-cart-x display-1"></i>
+                    <p class="mt-3">El carrito está vacío</p>
+                    <small>Selecciona productos para comenzar la venta</small>
+                </div>
+
+                <div th:if="${!productosCarrito.isEmpty()}">
+                    <div class="cart-item mb-3 p-3 bg-light rounded" th:each="detalle : ${productosCarrito}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-1" th:text="${detalle.nombreProducto}"></h6>
+                            <form th:action="@{/ventas/remover-del-carrito}" method="post" style="display: inline;">
+                                <input type="hidden" name="productoId" th:value="${detalle.productoId}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="row align-items-center">
+                            <div class="col-4">
+                                <small class="text-muted">Precio:</small><br>
+                                <span th:text="'$' + ${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}"></span>
+                            </div>
+                            <div class="col-4">
+                                <form th:action="@{/ventas/actualizar-carrito}" method="post">
+                                    <input type="hidden" name="productoId" th:value="${detalle.productoId}">
+                                    <div class="input-group input-group-sm">
+                                        <input type="number"
+                                               class="form-control"
+                                               name="cantidad"
+                                               th:value="${detalle.cantidad}"
+                                               min="1"
+                                               onchange="this.form.submit()">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-4 text-end">
+                                <small class="text-muted">Subtotal:</small><br>
+                                <strong class="text-success"
+                                        th:text="'$' + ${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}"></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totales -->
+                    <div class="total-section text-white p-3 rounded mt-4">
+                        <div class="row">
+                            <div class="col-6"><strong>Subtotal:</strong></div>
+                            <div class="col-6 text-end"
+                                 th:text="'$' + ${#numbers.formatDecimal(venta.subtotal, 0, 'COMMA', 0, 'POINT')}"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">IVA (19%):</div>
+                            <div class="col-6 text-end"
+                                 th:text="'$' + ${#numbers.formatDecimal(venta.iva, 0, 'COMMA', 0, 'POINT')}"></div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-6"><strong>TOTAL:</strong></div>
+                            <div class="col-6 text-end">
+                                <h4 th:text="'$' + ${#numbers.formatDecimal(venta.total, 0, 'COMMA', 0, 'POINT')}"></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de finalización -->
+                    <form th:action="@{/ventas/finalizar-venta}" method="post" class="mt-4">
+                        <div class="mb-3">
+                            <label class="form-label">Cliente:</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="cliente"
+                                   placeholder="Nombre del cliente (opcional)">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Método de Pago:</label>
+                            <select class="form-select" name="metodoPago" required>
+                                <option value="EFECTIVO">💵 Efectivo</option>
+                                <option value="TARJETA">💳 Tarjeta</option>
+                                <option value="TRANSFERENCIA">🏦 Transferencia</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Finalizar Venta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script para mejorar UX -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-cerrar alertas después de 3 segundos
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 3000);
+        });
+
+        // Confirmar antes de limpiar carrito
+        const clearCartBtn = document.querySelector('form[action*="cancelar-venta"] button');
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', function(e) {
+                if (!confirm('¿Estás seguro de que deseas limpiar el carrito?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Scroll automático al agregar producto
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('added')) {
+            document.querySelector('.total-section').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Supermercado</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4">🛒 Sistema de Supermercado</h1>
+        <p class="lead text-muted">Gestiona tu inventario de productos de manera fácil y eficiente</p>
+    </div>
+
+    <!-- Estadísticas principales -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-box-seam display-1 text-primary"></i>
+                    <h3 class="card-title mt-3" th:text="${totalProductos}">0</h3>
+                    <p class="card-text">Total de Productos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-currency-dollar display-1 text-success"></i>
+                    <h3 class="card-title mt-3"
+                        th:text="'$' + ${#numbers.formatDecimal(valorTotal, 0, 'COMMA', 0, 'POINT')}">$0</h3>
+                    <p class="card-text">Valor Total del Inventario</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="bi bi-graph-up display-1 text-info"></i>
+                    <h3 class="card-title mt-3"
+                        th:text="${#numbers.formatDecimal(valorTotal / totalProductos, 0, 'COMMA', 0, 'POINT')} + '$'">$0</h3>
+                    <p class="card-text">Precio Promedio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones principales -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-ul display-3 text-primary mb-3"></i>
+                    <h4 class="card-title">Ver Productos</h4>
+                    <p class="card-text">Consulta, busca y gestiona todos tus productos en el inventario.</p>
+                    <a th:href="@{/productos}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-eye"></i> Ver Lista Completa
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cart-plus display-3 text-success mb-3"></i>
+                    <h4 class="card-title">Punto de Venta</h4>
+                    <p class="card-text">Realiza ventas de manera rápida y eficiente con nuestro POS.</p>
+                    <a th:href="@{/ventas/pos}" class="btn btn-success btn-lg">
+                        <i class="bi bi-shop"></i> Abrir POS
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up display-3 text-info mb-3"></i>
+                    <h4 class="card-title">Ver Ventas</h4>
+                    <p class="card-text">Consulta el historial de ventas y genera reportes.</p>
+                    <a th:href="@{/ventas/lista}" class="btn btn-info btn-lg">
+                        <i class="bi bi-receipt"></i> Ver Ventas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones secundarias -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-plus-circle display-4 text-warning mb-3"></i>
+                    <h5 class="card-title">Agregar Producto</h5>
+                    <p class="card-text">Añade nuevos productos a tu inventario.</p>
+                    <a th:href="@{/agregar}" class="btn btn-warning">
+                        <i class="bi bi-plus"></i> Agregar Nuevo
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-calculator display-4 text-secondary mb-3"></i>
+                    <h5 class="card-title">Calculadora</h5>
+                    <p class="card-text">Herramientas adicionales para el negocio.</p>
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-tools"></i> Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos recientes -->
+    <div class="row" th:if="${!productosRecientes.isEmpty()}">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-clock-history"></i> Productos Recientes
+            </h3>
+            <div class="row">
+                <div class="col-md-4" th:each="producto : ${productosRecientes}">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${producto.nombre}">Producto</h5>
+                            <p class="card-text">
+                                <span class="badge bg-secondary">ID: <span th:text="${producto.id}"></span></span>
+                                <span class="badge bg-success">$<span th:text="${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}"></span></span>
+                                <span class="badge bg-primary">Cant: <span th:text="${producto.cantidad}"></span></span>
+                            </p>
+                            <p class="card-text">
+                                <strong>Total: $<span th:text="${#numbers.formatDecimal(producto.precio * producto.cantidad, 0, 'COMMA', 0, 'POINT')}"></span></strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 py-4 border-top">
+        <p class="text-muted">&copy; 2025 Sistema de Supermercado - Desarrollado con Spring Boot</p>
+    </footer>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

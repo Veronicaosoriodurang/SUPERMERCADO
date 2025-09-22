@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Calculadora {
 
     // Objeto Scanner para leer la entrada del usuario, declarado como un campo para que sea accesible en todos los métodos
-    private Scanner scanner;
+    private final Scanner scanner;
 
     // Constructor de la clase Calculadora
     public Calculadora() {
